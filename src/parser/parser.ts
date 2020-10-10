@@ -1,29 +1,105 @@
 import * as peg from "pegjs";
 import * as util from "util";
 
-const makeProgramNode = (lines: any, loc?: any) => {
-  return { type: "program", loc, lines };
+export type Numeric = IAdd | IMult | ICall | IVec | INum;
+
+export interface IPosition {
+  offset: number;
+  line: number;
+  column: number;
+}
+
+export interface ILocation {
+  start: IPosition;
+  end: IPosition;
+}
+
+export interface IProgram {
+  type: "program";
+  loc?: ILocation;
+  lines: ILine[];
+}
+
+export interface ILine {
+  type: "line";
+  loc?: ILocation;
+  val: Numeric;
+}
+
+export interface IAdd {
+  type: "add";
+  loc?: ILocation;
+  left: Numeric;
+  right: Numeric;
+  op: "+" | "-";
+}
+
+export interface IMult {
+  type: "mult";
+  loc?: ILocation;
+  left: Numeric;
+  right: Numeric;
+  op: "+" | "-";
+}
+
+export interface INum {
+  type: "num";
+  loc?: ILocation;
+  val: number;
+}
+
+export interface IVec {
+  type: "vec";
+  loc?: ILocation;
+  vals: Numeric[];
+}
+
+export interface ICall {
+  type: "call";
+  loc?: ILocation;
+  name: string;
+  args: Numeric[];
+}
+
+export const makeProgramNode = (lines: ILine[], loc?: ILocation): IProgram => {
+  return { type: "program", loc: loc, lines: lines };
 };
 
-const makeLineNode = (val: any, loc?: any) => {
+export const makeLineNode = (val: any, loc?: any): ILine => {
   return { type: "line", loc, val };
 };
 
-const makeAddNode = (left: any, right: any, op: "+" | "-", loc?: any) => {
+export const makeAddNode = (
+  left: any,
+  right: any,
+  op: "+" | "-",
+  loc?: any
+): IAdd => {
   return { type: "add", loc, left, right, op };
 };
 
-const makeMultNode = (left: any, right: any, op: "+" | "-", loc?: any) => {
+export const makeMultNode = (
+  left: any,
+  right: any,
+  op: "+" | "-",
+  loc?: any
+): IMult => {
   return { type: "mult", loc, left, right, op };
 };
 
-const makeVectorNode = (values: any[], loc?: any) => {
-  return { type: "vec", loc, values };
+export const makeNumNode = (val: number, loc?: ILocation): INum => {
+  return { type: "num", loc, val };
 };
 
-const makeCallNode = (name: string, args: any[], loc?: any) => {
+export const makeVecNode = (vals: any[], loc?: ILocation): IVec => {
+  return { type: "vec", loc, vals };
+};
+
+export const makeCallNode = (name: string, args: any[], loc?: any): ICall => {
   return { type: "call", loc, name, args };
 };
+
+// TODO get rid of parsefloat and make number interface
 
 const source = `
 {
@@ -31,7 +107,8 @@ const source = `
   const makeLineNode = ${"" + makeLineNode};
   const makeAddNode = ${"" + makeAddNode};
   const makeMultNode = ${"" + makeMultNode};
-  const makeVectorNode = ${"" + makeVectorNode};
+  const makeNumNode = ${"" + makeNumNode};
+  const makeVecNode = ${"" + makeVecNode};
   const makeCallNode = ${"" + makeCallNode};
 }
 
@@ -57,10 +134,10 @@ primary
   / open_paren any:any close_paren { return any; }
 
 number "number"
-  = ([0-9]* "." [0-9]+ / [0-9]+ "." / [0-9]+) { return parseFloat(text()); } 
+  = ([0-9]* "." [0-9]+ / [0-9]+ "." / [0-9]+) { return makeNumNode(parseFloat(text()), location()); } 
 
 vec
-  = open_vec args:args close_vec { return makeVectorNode(args, location()); }
+  = open_vec args:args close_vec { return makeVecNode(args, location()); }
 
 call "call"
   = name:[a-zA-Z0-9]+ open_paren args:args close_paren { return makeCallNode(name.join(''), args, location()); }
@@ -86,9 +163,14 @@ lb "linebreak" = [\\n\\r]
 lbc "linebreakchunk" = ws* lb
 `;
 
-const parser = peg.generate(source + "\n");
+const parser = peg.generate(source);
+
+export function parse(str: string) {
+  parser.parse(str + "\n");
+}
 
 function printResults(str: string) {
+  str += "\n";
   console.log(str);
   console.log(
     util.inspect(parser.parse(str), {
