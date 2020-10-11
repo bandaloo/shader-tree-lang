@@ -51,115 +51,115 @@ const twoLine = makeProgramNode([
 ]);
 
 describe("spacing", () => {
-  it("adds two numbers no space", () => {
+  it("parses adding two numbers no space", () => {
     expect(parse("1+2")).excludingEvery("loc").to.deep.equal(onePlusTwo);
   });
 
-  it("adds two numbers inner space", () => {
+  it("parses adding two numbers inner space", () => {
     expect(parse("1 + 2")).excludingEvery("loc").to.deep.equal(onePlusTwo);
   });
 
-  it("adds two numbers outer space", () => {
+  it("parses adding two numbers outer space", () => {
     expect(parse(" 1+2 ")).excludingEvery("loc").to.deep.equal(onePlusTwo);
   });
 
-  it("adds two numbers excessive space", () => {
+  it("parses adding two numbers excessive space", () => {
     expect(parse("   1   +   2   "))
       .excludingEvery("loc")
       .to.deep.equal(onePlusTwo);
   });
 
-  it("vector expression no space", () => {
+  it("parses vector expression no space", () => {
     expect(parse("[1,2,3]"))
       .excludingEvery("loc")
       .to.deep.equal(oneTwoThreeVec);
   });
 
-  it("vector expression inner space", () => {
+  it("parses vector expression inner space", () => {
     expect(parse("[ 1 , 2 , 3 ]"))
       .excludingEvery("loc")
       .to.deep.equal(oneTwoThreeVec);
   });
 
-  it("vector expression outer space", () => {
+  it("parses vector expression outer space", () => {
     expect(parse(" [1,2,3] "))
       .excludingEvery("loc")
       .to.deep.equal(oneTwoThreeVec);
   });
 
-  it("vector expression excessive space", () => {
+  it("parses vector expression excessive space", () => {
     expect(parse("   [1   ,   2   ,   3]   "))
       .excludingEvery("loc")
       .to.deep.equal(oneTwoThreeVec);
   });
 
-  it("function call no args no space", () => {
+  it("parses function call no args no space", () => {
     expect(parse("doSomething()"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallNoArgs);
   });
 
-  it("function call no args inner space", () => {
+  it("parses function call no args inner space", () => {
     expect(parse("doSomething( )"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallNoArgs);
   });
 
-  it("function call no args outer space", () => {
+  it("parses function call no args outer space", () => {
     expect(parse(" doSomething() "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallNoArgs);
   });
 
-  it("function call no args excessive space", () => {
+  it("parses function call no args excessive space", () => {
     expect(parse("   doSomething(   )   "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallNoArgs);
   });
 
-  it("function call one arg no space", () => {
+  it("parses function call one arg no space", () => {
     expect(parse("doSomething(1)"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallOneArg);
   });
 
-  it("function call one arg inner space", () => {
+  it("parses function call one arg inner space", () => {
     expect(parse("doSomething( 1 )"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallOneArg);
   });
 
-  it("function call one arg outer space", () => {
+  it("parses function call one arg outer space", () => {
     expect(parse(" doSomething(1) "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallOneArg);
   });
 
-  it("function call one arg excessive space", () => {
+  it("parses function call one arg excessive space", () => {
     expect(parse("   doSomething(   1   )   "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallOneArg);
   });
 
-  it("function call one arg no space", () => {
+  it("parses function call one arg no space", () => {
     expect(parse("doSomething(1,2,[1,2,3])"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallManyArgs);
   });
 
-  it("function call one arg inner space", () => {
+  it("parses function call one arg inner space", () => {
     expect(parse("doSomething( 1 , 2 , [ 1 , 2 , 3 ] )"))
       .excludingEvery("loc")
       .to.deep.equal(funcCallManyArgs);
   });
 
-  it("function call one arg outer space", () => {
+  it("parses function call one arg outer space", () => {
     expect(parse(" doSomething(1,2,[1,2,3]) "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallManyArgs);
   });
 
-  it("function call one arg excessive space", () => {
+  it("parses function call one arg excessive space", () => {
     expect(parse("  doSomething(  1  ,  2  ,  [  1  ,  2  ,  3  ]  )  "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallManyArgs);
