@@ -39,7 +39,7 @@ export interface IMult {
   loc?: ILocation;
   left: Numeric;
   right: Numeric;
-  op: "+" | "-";
+  op: "*" | "/";
 }
 
 export interface INum {
@@ -65,24 +65,24 @@ export const makeProgramNode = (lines: ILine[], loc?: ILocation): IProgram => {
   return { type: "program", loc: loc, lines: lines };
 };
 
-export const makeLineNode = (val: any, loc?: any): ILine => {
+export const makeLineNode = (val: Numeric, loc?: ILocation): ILine => {
   return { type: "line", loc, val };
 };
 
 export const makeAddNode = (
-  left: any,
-  right: any,
+  left: Numeric,
+  right: Numeric,
   op: "+" | "-",
-  loc?: any
+  loc?: ILocation
 ): IAdd => {
   return { type: "add", loc, left, right, op };
 };
 
 export const makeMultNode = (
-  left: any,
-  right: any,
-  op: "+" | "-",
-  loc?: any
+  left: Numeric,
+  right: Numeric,
+  op: "*" | "/",
+  loc?: ILocation
 ): IMult => {
   return { type: "mult", loc, left, right, op };
 };
@@ -91,11 +91,15 @@ export const makeNumNode = (val: number, loc?: ILocation): INum => {
   return { type: "num", loc, val };
 };
 
-export const makeVecNode = (vals: any[], loc?: ILocation): IVec => {
+export const makeVecNode = (vals: Numeric[], loc?: ILocation): IVec => {
   return { type: "vec", loc, vals };
 };
 
-export const makeCallNode = (name: string, args: any[], loc?: any): ICall => {
+export const makeCallNode = (
+  name: string,
+  args: Numeric[],
+  loc?: ILocation
+): ICall => {
   return { type: "call", loc, name, args };
 };
 
@@ -122,7 +126,7 @@ any
   = additive
 
 additive
-  = left:multiplicative op:add_op right:additive { return makeAddNode(left, right, op, location()); }
+  = left:multiplicative ws* op:add_op ws* right:additive { return makeAddNode(left, right, op, location()); }
   / multiplicative
 
 multiplicative
@@ -154,8 +158,8 @@ open_vec = ws* "[" ws*
 close_vec = ws* "]" ws*
 open_paren = ws* "(" ws*
 close_paren = ws* ")" ws*
-add_op = [+-] 
-mult_op = [*/]
+add_op = [+-]
+mult_op = ws* [*/] ws*
 val_sep = ws* "," ws*
 
 ws "whitespace" = [ \\t]
@@ -166,7 +170,7 @@ lbc "linebreakchunk" = ws* lb
 const parser = peg.generate(source);
 
 export function parse(str: string) {
-  parser.parse(str + "\n");
+  return parser.parse(str + "\n");
 }
 
 function printResults(str: string) {
@@ -183,20 +187,21 @@ function printResults(str: string) {
 
 console.log("printing results");
 
-printResults("1\n");
-printResults("1+2*3\n");
-printResults("[1,2]*[3,4]\n");
-printResults("doSomething()\n");
-printResults("doSomething(1)\n");
-printResults("doSomething(1+1,2,3)\n");
-printResults("doSomething(somethingElse(2,3),2,3)\n");
-printResults("doSomething(1+2,[1,2.])\n");
-printResults("1.1+.2*3.-4/55.555\n");
 /*
+printResults("1");
+printResults("1 + 2");
+printResults("1 + 2*3");
+printResults("[1,2]*[3,4]");
+printResults("doSomething()");
+printResults("doSomething(1)");
+printResults("doSomething(1+1,2,3)");
+printResults("doSomething(somethingElse(2,3),2,3)");
+printResults("doSomething(1+2,[1,2.])");
+printResults("1.1+.2*3.-4/55.555");
 printResults(`   \n  \n \n\n
 1.1+.2*3.-4/55.555
 doSomething([1, 2], 3)    \n   \n   `);
-*/
 printResults(`
   \n\n\n \n\n1.1+.2*3.-4/55.555   \n  \n     doSomething([1, 2], 3)
    \n`);
+*/
