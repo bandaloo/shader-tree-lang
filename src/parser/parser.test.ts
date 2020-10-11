@@ -16,15 +16,6 @@ chai.use(chaiExclude);
 const onePlusTwoExpr = makeAddNode(makeNumNode(1), makeNumNode(2), "+");
 const onePlusTwo = makeProgramNode([makeLineNode(onePlusTwoExpr)]);
 
-const onePlusTwoTimeThreeExpr = makeAddNode(
-  makeNumNode(1),
-  makeMultNode(makeNumNode(2), makeNumNode(3), "*"),
-  "+"
-);
-const onePlusTwoTimesThree = makeProgramNode([
-  makeLineNode(onePlusTwoTimeThreeExpr),
-]);
-
 const oneTwoThreeVecExpr = makeVecNode([
   makeNumNode(1),
   makeNumNode(2),
@@ -49,6 +40,40 @@ const twoLine = makeProgramNode([
   makeLineNode(onePlusTwoExpr),
   makeLineNode(oneTwoThreeVecExpr),
 ]);
+
+const onePlusTwoTimeThreeExpr = makeAddNode(
+  makeNumNode(1),
+  makeMultNode(makeNumNode(2), makeNumNode(3), "*"),
+  "+"
+);
+const onePlusTwoTimesThree = makeProgramNode([
+  makeLineNode(onePlusTwoTimeThreeExpr),
+]);
+
+const onePlusTwoTimeThreeParensExpr = makeMultNode(
+  makeAddNode(makeNumNode(1), makeNumNode(2), "+"),
+  makeNumNode(3),
+  "*"
+);
+const onePlusTwoTimesThreeParens = makeProgramNode([
+  makeLineNode(onePlusTwoTimeThreeParensExpr),
+]);
+
+const onePlusTwoTimeThreeCallsExpr = makeAddNode(
+  makeCallNode("one", []),
+  makeMultNode(makeCallNode("two", []), makeCallNode("three", []), "*"),
+  "+"
+);
+const onePlusTwoTimesThreeCalls = makeProgramNode([
+  makeLineNode(onePlusTwoTimeThreeCallsExpr),
+]);
+
+const twoDivOneSubExpr = makeAddNode(
+  makeMultNode(makeNumNode(1), makeNumNode(2), "/"),
+  makeMultNode(makeNumNode(3), makeNumNode(4), "/"),
+  "-"
+);
+const twoDivOneSub = makeProgramNode([makeLineNode(twoDivOneSubExpr)]);
 
 describe("spacing", () => {
   it("parses adding two numbers no space", () => {
@@ -136,7 +161,7 @@ describe("spacing", () => {
   });
 
   it("parses function call one arg excessive space", () => {
-    expect(parse("   doSomething(   1   )   "))
+    expect(parse("   doSomething   (   1   )   "))
       .excludingEvery("loc")
       .to.deep.equal(funcCallOneArg);
   });
@@ -223,5 +248,49 @@ describe("line breaks", () => {
     )
       .excludingEvery("loc")
       .to.deep.equal(twoLine);
+  });
+});
+
+describe("order of operations", () => {
+  it("parses addition then multiplication", () => {
+    expect(parse("1 + 2 * 3"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThree);
+  });
+
+  it("parses addition then multiplication function calls", () => {
+    expect(parse("one() + two() * three()"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThreeCalls);
+  });
+
+  it("parses division and subtraction", () => {
+    expect(parse("1 / 2 - 3 / 4"))
+      .excludingEvery("loc")
+      .to.deep.equal(twoDivOneSub);
+  });
+
+  it("parses forced order of operations with parens", () => {
+    expect(parse("(1 + 2) * 3"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThreeParens);
+  });
+
+  it("parses expression with redundant parens", () => {
+    expect(parse("((1 + 2) * 3)"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThreeParens);
+  });
+
+  it("parses expression with redundant parens with spaces", () => {
+    expect(parse("   (   (   1 + 2   ) * 3   )   "))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThreeParens);
+  });
+
+  it("parses expression with excessively redundant parens", () => {
+    expect(parse("(((((1 + 2) * 3))))"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThreeParens);
   });
 });
