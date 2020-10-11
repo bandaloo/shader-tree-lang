@@ -103,7 +103,6 @@ export const makeCallNode = (
   return { type: "call", loc, name, args };
 };
 
-// TODO allow for minus numbers without multiplication
 // TODO disallow function names that start with number
 
 const source = `
@@ -139,7 +138,7 @@ primary
   / open_paren any:any close_paren { return any; }
 
 number "number"
-  = ws* ([0-9]* "." [0-9]+ / [0-9]+ "." / [0-9]+) ws* { return makeNumNode(parseFloat(text()), location()); }
+  = ws* [+-]? ([0-9]* "." [0-9]+ / [0-9]+ "." / [0-9]+) ws* { return makeNumNode(parseFloat(text()), location()); }
 
 vec
   = open_vec args:args close_vec { return makeVecNode(args, location()); }

@@ -50,6 +50,40 @@ const onePlusTwoTimesThree = makeProgramNode([
   makeLineNode(onePlusTwoTimeThreeExpr),
 ]);
 
+const plusTimesSmallDecExpr = makeAddNode(
+  makeNumNode(0.1),
+  makeMultNode(makeNumNode(0.2), makeNumNode(0.3), "*"),
+  "+"
+);
+const plusTimesSmallDec = makeProgramNode([
+  makeLineNode(plusTimesSmallDecExpr),
+]);
+
+const plusTimesBigDecExpr = makeAddNode(
+  makeNumNode(1.1),
+  makeMultNode(makeNumNode(2.2), makeNumNode(3.3), "*"),
+  "+"
+);
+const plusTimesBigDec = makeProgramNode([makeLineNode(plusTimesBigDecExpr)]);
+
+const plusTimesManyDigitsExpr = makeAddNode(
+  makeNumNode(111.111),
+  makeMultNode(makeNumNode(2222.0), makeNumNode(0.3456), "*"),
+  "+"
+);
+const plusTimesManyDigits = makeProgramNode([
+  makeLineNode(plusTimesManyDigitsExpr),
+]);
+
+const plusTimesManyDigitsMinusExpr = makeAddNode(
+  makeNumNode(-111.111),
+  makeMultNode(makeNumNode(-2222.0), makeNumNode(-0.3456), "*"),
+  "+"
+);
+const plusTimesManyDigitsMinus = makeProgramNode([
+  makeLineNode(plusTimesManyDigitsMinusExpr),
+]);
+
 const onePlusTwoTimeThreeParensExpr = makeMultNode(
   makeAddNode(makeNumNode(1), makeNumNode(2), "+"),
   makeNumNode(3),
@@ -292,5 +326,49 @@ describe("order of operations", () => {
     expect(parse("(((((1 + 2) * 3))))"))
       .excludingEvery("loc")
       .to.deep.equal(onePlusTwoTimesThreeParens);
+  });
+});
+
+describe("number formats", () => {
+  it("parses whole numbers with ending decimals", () => {
+    expect(parse("1. + 2. * 3."))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThree);
+  });
+
+  it("parses whole numbers with zero for decimal", () => {
+    expect(parse("1.0 + 2.0 * 3.0"))
+      .excludingEvery("loc")
+      .to.deep.equal(onePlusTwoTimesThree);
+  });
+
+  it("parses numbers with starting decimals", () => {
+    expect(parse(".1 + .2 * .3"))
+      .excludingEvery("loc")
+      .to.deep.equal(plusTimesSmallDec);
+  });
+
+  it("parses numbers with middle decimals", () => {
+    expect(parse("1.1 + 2.2 * 3.3"))
+      .excludingEvery("loc")
+      .to.deep.equal(plusTimesBigDec);
+  });
+
+  it("parses numbers with many digits", () => {
+    expect(parse("111.111 + 2222. * .3456"))
+      .excludingEvery("loc")
+      .to.deep.equal(plusTimesManyDigits);
+  });
+
+  it("parses numbers with plus sign before", () => {
+    expect(parse("+111.111 + +2222. * +.3456"))
+      .excludingEvery("loc")
+      .to.deep.equal(plusTimesManyDigits);
+  });
+
+  it("parses numbers with minus sign before", () => {
+    expect(parse("-111.111 + -2222. * -.3456"))
+      .excludingEvery("loc")
+      .to.deep.equal(plusTimesManyDigitsMinus);
   });
 });
