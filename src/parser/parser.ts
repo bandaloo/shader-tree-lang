@@ -3,6 +3,8 @@ import * as util from "util";
 
 export type Numeric = IAdd | IMult | ICall | IVec | INum;
 
+export type Typing = "float" | "vec2" | "vec3" | "vec4";
+
 export interface IPosition {
   offset: number;
   line: number;
@@ -23,7 +25,7 @@ export interface IProgram {
 export interface ILine {
   type: "line";
   loc?: ILocation;
-  val: Numeric;
+  val: Numeric | IFunc;
 }
 
 export interface IAdd {
@@ -61,11 +63,25 @@ export interface ICall {
   args: Numeric[];
 }
 
+export interface IParam {
+  typing: "float" | "vec2" | "vec3" | "vec4";
+  name: string;
+}
+
+export interface IFunc {
+  type: "func";
+  loc?: ILocation;
+  name: string;
+  ret: Typing;
+  params: IParam[];
+  lines: ILine[];
+}
+
 export const makeProgramNode = (lines: ILine[], loc?: ILocation): IProgram => {
   return { type: "program", loc: loc, lines: lines };
 };
 
-export const makeLineNode = (val: Numeric, loc?: ILocation): ILine => {
+export const makeLineNode = (val: Numeric | IFunc, loc?: ILocation): ILine => {
   return { type: "line", loc, val };
 };
 
@@ -103,7 +119,20 @@ export const makeCallNode = (
   return { type: "call", loc, name, args };
 };
 
+export const makeFuncNode = (
+  name: string,
+  ret: Typing,
+  params: IParam[],
+  lines: ILine[],
+  loc?: ILocation
+): IFunc => {
+  return { type: "func", name, ret, params, lines, loc };
+};
+
 // TODO disallow function names that start with number
+// TODO rename some of the types (change any to expression?)
+// TODO make a pattern for type; reuse int in declaration and params
+// TODO declaration, expression and statement type
 
 const source = `
 {
@@ -114,16 +143,22 @@ const source = `
   const makeNumNode = ${"" + makeNumNode};
   const makeVecNode = ${"" + makeVecNode};
   const makeCallNode = ${"" + makeCallNode};
+  const makeFuncNode = ${"" + makeFuncNode};
 }
 
 start
-  = lbc* lines:line* { return makeProgramNode([...lines ], location()) }
+  = lbc* lines:line* { return makeProgramNode([...lines ], location()); }
 
 line
-  = ws* anys:any lbc+ { return makeLineNode(anys, location()); }
+  = ws* val:(any / func) lbc+ { return makeLineNode(val, location()); }
 
 any
   = additive
+
+func "function declaration"
+  = ret:("float" / "vec2" / "vec3" / "vec4") ws+ name:[a-zA-Z0-9]+ open_paren params:type_param* close_paren open_brace lbc* lines:line* close_brace {
+    return makeFuncNode(name.join(''), ret, params, lines, location());
+  }
 
 additive
   = left:multiplicative ws* op:add_op ws* right:additive { return makeAddNode(left, right, op, location()); }
@@ -143,21 +178,31 @@ number "number"
 vec
   = open_vec args:args close_vec { return makeVecNode(args, location()); }
 
-call "call"
+call "function call"
   = ws* name:[a-zA-Z0-9]+ open_paren args:args close_paren { return makeCallNode(name.join(''), args, location()); }
 
 numeric "numeric"
   = (number / vec / call)
 
-args "args"
+args "arguments"
   = vals0:(any)* vals1:(val_sep any)* { 
     return vals0[0] === undefined ? [] : [vals0[0], ...vals1.map(n => n[1]).flat()];
   }
+
+params "parameters"
+  = param0:type_param* param1:(val_sep type_param)* {
+    return param0[0] === undefined ? [] : [param0[0], ...param1.map(n => n[1]).flat()];
+  }
+
+type_param "type and parameter pair"
+  = type:[a-zA-Z0-9]+ ws+ param:[a-zA-Z0-9]+
 
 open_vec = ws* "[" ws*
 close_vec = ws* "]" ws*
 open_paren = ws* "(" ws*
 close_paren = ws* ")" ws*
+open_brace = ws* "{" ws*
+close_brace = ws* "}" ws*
 add_op = [+-]
 mult_op = [*/]
 val_sep = ws* "," ws*

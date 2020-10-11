@@ -3,6 +3,7 @@ import chaiExclude from "chai-exclude";
 import {
   makeAddNode,
   makeCallNode,
+  makeFuncNode,
   makeLineNode,
   makeMultNode,
   makeNumNode,
@@ -108,6 +109,9 @@ const twoDivOneSubExpr = makeAddNode(
   "-"
 );
 const twoDivOneSub = makeProgramNode([makeLineNode(twoDivOneSubExpr)]);
+
+const funcDeclNoArgsExpr = makeFuncNode("doSomething", "float", [], []);
+const funcDeclNoArgs = makeProgramNode([makeLineNode(funcDeclNoArgsExpr)]);
 
 describe("spacing", () => {
   it("parses adding two numbers no space", () => {
@@ -223,7 +227,15 @@ describe("spacing", () => {
       .excludingEvery("loc")
       .to.deep.equal(funcCallManyArgs);
   });
+
+  it("parse function declaration no args no space", () => {
+    expect(parse(`float doSomething(){}`))
+      .excludingEvery("loc")
+      .to.deep.equal(funcDeclNoArgs);
+  });
 });
+
+// TODO test empty lines inside function declaration
 
 describe("line breaks", () => {
   it("parses two line program no extra line breaks", () => {
