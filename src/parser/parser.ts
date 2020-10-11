@@ -103,7 +103,7 @@ export const makeCallNode = (
   return { type: "call", loc, name, args };
 };
 
-// TODO get rid of parsefloat and make number interface
+// TODO allow for minus numbers without multiplication
 
 const source = `
 {

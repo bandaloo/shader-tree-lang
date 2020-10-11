@@ -32,11 +32,6 @@ const oneTwoThreeVecExpr = makeVecNode([
 ]);
 const oneTwoThreeVec = makeProgramNode([makeLineNode(oneTwoThreeVecExpr)]);
 
-const twoLine = makeProgramNode([
-  makeLineNode(onePlusTwoExpr),
-  makeLineNode(oneTwoThreeVecExpr),
-]);
-
 const funcCallNoArgsExpr = makeCallNode("doSomething", []);
 const funcCallNoArgs = makeProgramNode([makeLineNode(funcCallNoArgsExpr)]);
 
@@ -49,6 +44,11 @@ const funcCallManyArgsExpr = makeCallNode("doSomething", [
   oneTwoThreeVecExpr,
 ]);
 const funcCallManyArgs = makeProgramNode([makeLineNode(funcCallManyArgsExpr)]);
+
+const twoLine = makeProgramNode([
+  makeLineNode(onePlusTwoExpr),
+  makeLineNode(oneTwoThreeVecExpr),
+]);
 
 describe("spacing", () => {
   it("adds two numbers no space", () => {
@@ -166,4 +166,62 @@ describe("spacing", () => {
   });
 });
 
-describe("line breaks", () => {});
+describe("line breaks", () => {
+  it("parses two line program no extra line breaks", () => {
+    expect(
+      parse(`1 + 2
+[1, 2, 3]`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(twoLine);
+  });
+
+  it("parses two line program starting line break", () => {
+    expect(
+      parse(`
+1 + 2
+[1, 2, 3]`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(twoLine);
+  });
+
+  it("parses two line program ending line break", () => {
+    expect(
+      parse(`1 + 2
+[1, 2, 3]
+`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(twoLine);
+  });
+
+  it("parses two line program excessive line breaks", () => {
+    expect(
+      parse(`
+
+1 + 2
+
+
+[1, 2, 3]
+
+`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(twoLine);
+  });
+
+  it("parses two line program excessive line breaks with spaces", () => {
+    expect(
+      parse(`   \n
+
+   1 + 2   \n
+
+   [1, 2, 3]   \n
+
+   \n   `)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(twoLine);
+  });
+});
