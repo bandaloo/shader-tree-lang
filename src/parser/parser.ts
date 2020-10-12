@@ -19,14 +19,16 @@ export interface ILocation {
 export interface IProgram {
   type: "program";
   loc?: ILocation;
-  lines: ILine[];
+  lines: (Numeric | IFunc)[];
 }
 
+/*
 export interface ILine {
   type: "line";
   loc?: ILocation;
   val: Numeric | IFunc;
 }
+*/
 
 export interface IAdd {
   type: "add";
@@ -75,16 +77,21 @@ export interface IFunc {
   name: string;
   ret: Typing;
   params: IParam[];
-  lines: ILine[];
+  lines: (Numeric | IFunc)[];
 }
 
-export const makeProgramNode = (lines: ILine[], loc?: ILocation): IProgram => {
+export const makeProgramNode = (
+  lines: (Numeric | IFunc)[],
+  loc?: ILocation
+): IProgram => {
   return { type: "program", loc: loc, lines: lines };
 };
 
+/*
 export const makeLineNode = (val: Numeric | IFunc, loc?: ILocation): ILine => {
   return { type: "line", loc, val };
 };
+*/
 
 export const makeAddNode = (
   left: Numeric,
@@ -124,7 +131,7 @@ export const makeFuncNode = (
   name: string,
   ret: Typing,
   params: IParam[],
-  lines: ILine[],
+  lines: (Numeric | IFunc)[],
   loc?: ILocation
 ): IFunc => {
   return { type: "func", name, ret, params, lines, loc };
@@ -146,7 +153,6 @@ export const makeParamNode = (
 const source = `
 {
   const makeProgramNode = ${"" + makeProgramNode};
-  const makeLineNode = ${"" + makeLineNode};
   const makeAddNode = ${"" + makeAddNode};
   const makeMultNode = ${"" + makeMultNode};
   const makeNumNode = ${"" + makeNumNode};
@@ -157,17 +163,17 @@ const source = `
 }
 
 start
-  = lbc* lines:line* { return makeProgramNode([...lines ], location()); }
+  = lines:lines ws* { return makeProgramNode(lines, location()); }
 
-line
-  = val:(any / func) lbc+ { return makeLineNode(val, location()); }
+lines
+  = lbc* first:(any / func) rest:(lbc+ (any / func))* lbc* { return [first, ...rest.map((n) => n[1])]; }
 
 any
   = additive
 
 func "function declaration"
-  = ret:("float" / "vec2" / "vec3" / "vec4") ws+ name:[a-zA-Z0-9]+ open_paren params:params close_paren open_brace lbc* lines:line* close_brace {
-    return makeFuncNode(name.join(''), ret, params, lines, location());
+  = ret:("float" / "vec2" / "vec3" / "vec4") ws+ name:[a-zA-Z0-9]+ open_paren params:params close_paren open_brace lines:lines? close_brace {
+    return makeFuncNode(name.join(''), ret, params, lines ? lines : [], location());
   }
 
 additive
@@ -194,6 +200,7 @@ call "function call"
 numeric "numeric"
   = (number / vec / call)
 
+// TODO get rid of the flat
 args "arguments"
   = vals0:(any)* vals1:(val_sep any)* { 
     return vals0[0] === undefined ? [] : [vals0[0], ...vals1.map(n => n[1]).flat()];
@@ -225,11 +232,10 @@ lbc "linebreakchunk" = ws* lb
 const parser = peg.generate(source);
 
 export function parse(str: string) {
-  return parser.parse(str + "\n");
+  return parser.parse(str);
 }
 
 function printResults(str: string) {
-  str += "\n";
   console.log(str);
   console.log(
     util.inspect(parser.parse(str), {
@@ -259,4 +265,8 @@ doSomething([1, 2], 3)    \n   \n   `);
 printResults(`
   \n\n\n \n\n1.1+.2*3.-4/55.555   \n  \n     doSomething([1, 2], 3)
    \n`);
+printResults(`1
+2
+3
+4`);
 */

@@ -4,7 +4,6 @@ import {
   makeAddNode,
   makeCallNode,
   makeFuncNode,
-  makeLineNode,
   makeMultNode,
   makeNumNode,
   makeProgramNode,
@@ -15,66 +14,57 @@ import {
 chai.use(chaiExclude);
 
 const onePlusTwoExpr = makeAddNode(makeNumNode(1), makeNumNode(2), "+");
-const onePlusTwo = makeProgramNode([makeLineNode(onePlusTwoExpr)]);
+const onePlusTwo = makeProgramNode([onePlusTwoExpr]);
 
 const oneTwoThreeVecExpr = makeVecNode([
   makeNumNode(1),
   makeNumNode(2),
   makeNumNode(3),
 ]);
-const oneTwoThreeVec = makeProgramNode([makeLineNode(oneTwoThreeVecExpr)]);
+const oneTwoThreeVec = makeProgramNode([oneTwoThreeVecExpr]);
 
 const funcCallNoArgsExpr = makeCallNode("doSomething", []);
-const funcCallNoArgs = makeProgramNode([makeLineNode(funcCallNoArgsExpr)]);
+const funcCallNoArgs = makeProgramNode([funcCallNoArgsExpr]);
 
 const funcCallOneArgExpr = makeCallNode("doSomething", [makeNumNode(1)]);
-const funcCallOneArg = makeProgramNode([makeLineNode(funcCallOneArgExpr)]);
+const funcCallOneArg = makeProgramNode([funcCallOneArgExpr]);
 
 const funcCallManyArgsExpr = makeCallNode("doSomething", [
   makeNumNode(1),
   makeNumNode(2),
   oneTwoThreeVecExpr,
 ]);
-const funcCallManyArgs = makeProgramNode([makeLineNode(funcCallManyArgsExpr)]);
+const funcCallManyArgs = makeProgramNode([funcCallManyArgsExpr]);
 
-const twoLine = makeProgramNode([
-  makeLineNode(onePlusTwoExpr),
-  makeLineNode(oneTwoThreeVecExpr),
-]);
+const twoLine = makeProgramNode([onePlusTwoExpr, oneTwoThreeVecExpr]);
 
 const onePlusTwoTimeThreeExpr = makeAddNode(
   makeNumNode(1),
   makeMultNode(makeNumNode(2), makeNumNode(3), "*"),
   "+"
 );
-const onePlusTwoTimesThree = makeProgramNode([
-  makeLineNode(onePlusTwoTimeThreeExpr),
-]);
+const onePlusTwoTimesThree = makeProgramNode([onePlusTwoTimeThreeExpr]);
 
 const plusTimesSmallDecExpr = makeAddNode(
   makeNumNode(0.1),
   makeMultNode(makeNumNode(0.2), makeNumNode(0.3), "*"),
   "+"
 );
-const plusTimesSmallDec = makeProgramNode([
-  makeLineNode(plusTimesSmallDecExpr),
-]);
+const plusTimesSmallDec = makeProgramNode([plusTimesSmallDecExpr]);
 
 const plusTimesBigDecExpr = makeAddNode(
   makeNumNode(1.1),
   makeMultNode(makeNumNode(2.2), makeNumNode(3.3), "*"),
   "+"
 );
-const plusTimesBigDec = makeProgramNode([makeLineNode(plusTimesBigDecExpr)]);
+const plusTimesBigDec = makeProgramNode([plusTimesBigDecExpr]);
 
 const plusTimesManyDigitsExpr = makeAddNode(
   makeNumNode(111.111),
   makeMultNode(makeNumNode(2222.0), makeNumNode(0.3456), "*"),
   "+"
 );
-const plusTimesManyDigits = makeProgramNode([
-  makeLineNode(plusTimesManyDigitsExpr),
-]);
+const plusTimesManyDigits = makeProgramNode([plusTimesManyDigitsExpr]);
 
 const plusTimesManyDigitsMinusExpr = makeAddNode(
   makeNumNode(-111.111),
@@ -82,7 +72,7 @@ const plusTimesManyDigitsMinusExpr = makeAddNode(
   "+"
 );
 const plusTimesManyDigitsMinus = makeProgramNode([
-  makeLineNode(plusTimesManyDigitsMinusExpr),
+  plusTimesManyDigitsMinusExpr,
 ]);
 
 const onePlusTwoTimeThreeParensExpr = makeMultNode(
@@ -91,7 +81,7 @@ const onePlusTwoTimeThreeParensExpr = makeMultNode(
   "*"
 );
 const onePlusTwoTimesThreeParens = makeProgramNode([
-  makeLineNode(onePlusTwoTimeThreeParensExpr),
+  onePlusTwoTimeThreeParensExpr,
 ]);
 
 const onePlusTwoTimeThreeCallsExpr = makeAddNode(
@@ -100,7 +90,7 @@ const onePlusTwoTimeThreeCallsExpr = makeAddNode(
   "+"
 );
 const onePlusTwoTimesThreeCalls = makeProgramNode([
-  makeLineNode(onePlusTwoTimeThreeCallsExpr),
+  onePlusTwoTimeThreeCallsExpr,
 ]);
 
 const twoDivOneSubExpr = makeAddNode(
@@ -108,18 +98,26 @@ const twoDivOneSubExpr = makeAddNode(
   makeMultNode(makeNumNode(3), makeNumNode(4), "/"),
   "-"
 );
-const twoDivOneSub = makeProgramNode([makeLineNode(twoDivOneSubExpr)]);
+const twoDivOneSub = makeProgramNode([twoDivOneSubExpr]);
 
 const funcDeclNoArgsExpr = makeFuncNode("doSomething", "vec3", [], []);
-const funcDeclNoArgs = makeProgramNode([makeLineNode(funcDeclNoArgsExpr)]);
+const funcDeclNoArgs = makeProgramNode([funcDeclNoArgsExpr]);
 
 const funcDeclOneArgExpr = makeFuncNode(
   "doSomething",
   "vec3",
   [{ typing: "vec2", name: "firstArg" }],
-  [makeLineNode(onePlusTwoExpr), makeLineNode(oneTwoThreeVecExpr)]
+  [onePlusTwoExpr, oneTwoThreeVecExpr]
 );
-const funcDeclOneArg = makeProgramNode([makeLineNode(funcDeclOneArgExpr)]);
+const funcDeclOneArg = makeProgramNode([funcDeclOneArgExpr]);
+
+const funcDeclOneLineExpr = makeFuncNode(
+  "doSomething",
+  "vec3",
+  [{ typing: "vec2", name: "firstArg" }],
+  [onePlusTwoExpr]
+);
+const funcDeclOneLine = makeProgramNode([funcDeclOneLineExpr]);
 
 const funcDeclManyArgsExpr = makeFuncNode(
   "doSomething",
@@ -130,9 +128,9 @@ const funcDeclManyArgsExpr = makeFuncNode(
     { typing: "vec4", name: "thirdArg" },
     { typing: "float", name: "fourthArg" },
   ],
-  [makeLineNode(onePlusTwoExpr), makeLineNode(oneTwoThreeVecExpr)]
+  [onePlusTwoExpr, oneTwoThreeVecExpr]
 );
-const funcDecManyArgs = makeProgramNode([makeLineNode(funcDeclManyArgsExpr)]);
+const funcDecManyArgs = makeProgramNode([funcDeclManyArgsExpr]);
 
 describe("spacing", () => {
   it("parses adding two numbers no space", () => {
@@ -265,6 +263,12 @@ describe("spacing", () => {
     )
       .excludingEvery("loc")
       .to.deep.equal(funcDeclOneArg);
+  });
+
+  it("parse function declaration all on one line", () => {
+    expect(parse(`vec3 doSomething(vec2 firstArg) { 1 + 2 }`))
+      .excludingEvery("loc")
+      .to.deep.equal(funcDeclOneLine);
   });
 
   it("parse function declaration with many args with body", () => {
