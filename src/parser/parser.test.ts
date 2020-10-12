@@ -110,8 +110,29 @@ const twoDivOneSubExpr = makeAddNode(
 );
 const twoDivOneSub = makeProgramNode([makeLineNode(twoDivOneSubExpr)]);
 
-const funcDeclNoArgsExpr = makeFuncNode("doSomething", "float", [], []);
+const funcDeclNoArgsExpr = makeFuncNode("doSomething", "vec3", [], []);
 const funcDeclNoArgs = makeProgramNode([makeLineNode(funcDeclNoArgsExpr)]);
+
+const funcDeclOneArgExpr = makeFuncNode(
+  "doSomething",
+  "vec3",
+  [{ typing: "vec2", name: "firstArg" }],
+  [makeLineNode(onePlusTwoExpr), makeLineNode(oneTwoThreeVecExpr)]
+);
+const funcDeclOneArg = makeProgramNode([makeLineNode(funcDeclOneArgExpr)]);
+
+const funcDeclManyArgsExpr = makeFuncNode(
+  "doSomething",
+  "vec3",
+  [
+    { typing: "vec2", name: "firstArg" },
+    { typing: "vec3", name: "secondArg" },
+    { typing: "vec4", name: "thirdArg" },
+    { typing: "float", name: "fourthArg" },
+  ],
+  [makeLineNode(onePlusTwoExpr), makeLineNode(oneTwoThreeVecExpr)]
+);
+const funcDecManyArgs = makeProgramNode([makeLineNode(funcDeclManyArgsExpr)]);
 
 describe("spacing", () => {
   it("parses adding two numbers no space", () => {
@@ -228,10 +249,33 @@ describe("spacing", () => {
       .to.deep.equal(funcCallManyArgs);
   });
 
-  it("parse function declaration no args no space", () => {
-    expect(parse(`float doSomething(){}`))
+  // TODO doesn't really make sense to have void function, or function with no body
+  it("parse function declaration no args no space no body", () => {
+    expect(parse(`vec3 doSomething(){}`))
       .excludingEvery("loc")
       .to.deep.equal(funcDeclNoArgs);
+  });
+
+  it("parse function declaration one arg with body", () => {
+    expect(
+      parse(`vec3 doSomething(vec2 firstArg) {
+  1 + 2
+  [1, 2, 3]
+}`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(funcDeclOneArg);
+  });
+
+  it("parse function declaration with many args with body", () => {
+    expect(
+      parse(`vec3 doSomething(vec2 firstArg, vec3 secondArg, vec4 thirdArg, float fourthArg) {
+  1 + 2
+  [1, 2, 3]
+}`)
+    )
+      .excludingEvery("loc")
+      .to.deep.equal(funcDecManyArgs);
   });
 });
 

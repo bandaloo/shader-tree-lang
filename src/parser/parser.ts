@@ -64,7 +64,8 @@ export interface ICall {
 }
 
 export interface IParam {
-  typing: "float" | "vec2" | "vec3" | "vec4";
+  typing: Typing;
+  loc?: ILocation;
   name: string;
 }
 
@@ -129,6 +130,14 @@ export const makeFuncNode = (
   return { type: "func", name, ret, params, lines, loc };
 };
 
+export const makeParamNode = (
+  typing: Typing,
+  name: string,
+  loc?: ILocation
+): IParam => {
+  return { typing, name, loc };
+};
+
 // TODO disallow function names that start with number
 // TODO rename some of the types (change any to expression?)
 // TODO make a pattern for type; reuse int in declaration and params
@@ -144,19 +153,20 @@ const source = `
   const makeVecNode = ${"" + makeVecNode};
   const makeCallNode = ${"" + makeCallNode};
   const makeFuncNode = ${"" + makeFuncNode};
+  const makeParamNode = ${"" + makeParamNode};
 }
 
 start
   = lbc* lines:line* { return makeProgramNode([...lines ], location()); }
 
 line
-  = ws* val:(any / func) lbc+ { return makeLineNode(val, location()); }
+  = val:(any / func) lbc+ { return makeLineNode(val, location()); }
 
 any
   = additive
 
 func "function declaration"
-  = ret:("float" / "vec2" / "vec3" / "vec4") ws+ name:[a-zA-Z0-9]+ open_paren params:type_param* close_paren open_brace lbc* lines:line* close_brace {
+  = ret:("float" / "vec2" / "vec3" / "vec4") ws+ name:[a-zA-Z0-9]+ open_paren params:params close_paren open_brace lbc* lines:line* close_brace {
     return makeFuncNode(name.join(''), ret, params, lines, location());
   }
 
@@ -195,7 +205,7 @@ params "parameters"
   }
 
 type_param "type and parameter pair"
-  = type:[a-zA-Z0-9]+ ws+ param:[a-zA-Z0-9]+
+  = type:("float" / "vec2" / "vec3" / "vec4") ws+ param:[a-zA-Z0-9]+ { return makeParamNode(type, param.join(''), location()); }
 
 open_vec = ws* "[" ws*
 close_vec = ws* "]" ws*
